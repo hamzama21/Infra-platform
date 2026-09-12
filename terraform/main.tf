@@ -23,9 +23,9 @@ resource "aws_vpc" "main" {
 
 resource "aws_subnet" "public" {
   vpc_id                  = aws_vpc.main.id
-  cidr_block               = "10.0.1.0/24"
-  availability_zone        = "eu-west-3a"
-  map_public_ip_on_launch  = true
+  cidr_block              = "10.0.1.0/24"
+  availability_zone       = "eu-west-3a"
+  map_public_ip_on_launch = true
 
   tags = {
     Name = "idp-public-subnet"
@@ -106,7 +106,7 @@ data "aws_ami" "ubuntu" {
 
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd*/ubuntu-noble-24.04-amd64-server-*"]
+    values = ["ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-*"]
   }
 
   filter {
@@ -117,14 +117,14 @@ data "aws_ami" "ubuntu" {
 
 resource "aws_instance" "k3s" {
   ami                    = data.aws_ami.ubuntu.id
-  instance_type          = "t2.micro"
+  instance_type          = "t3.small"
   subnet_id              = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.k3s.id]
   key_name               = aws_key_pair.idp.key_name
 
   user_data = <<-EOF
     #!/bin/bash
-    curl -sfL https://get.k3s.io | sh -
+    curl -sfL https://get.k3s.io/ | sh -
   EOF
 
   tags = {

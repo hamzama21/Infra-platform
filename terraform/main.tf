@@ -1,3 +1,4 @@
+# Infrastructure AWS pour le cluster k3s
 terraform {
   required_providers {
     aws = {
@@ -117,14 +118,19 @@ data "aws_ami" "ubuntu" {
 
 resource "aws_instance" "k3s" {
   ami                    = data.aws_ami.ubuntu.id
-  instance_type          = "t3.small"
+  instance_type          = "t3.medium"
   subnet_id              = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.k3s.id]
   key_name               = aws_key_pair.idp.key_name
 
+  root_block_device {
+    volume_size = 20
+    volume_type = "gp3"
+  }
+
   user_data = <<-EOF
     #!/bin/bash
-    curl -sfL https://get.k3s.io/ | sh -
+    curl -sfL https://get.k3s.io | sh -
   EOF
 
   tags = {
